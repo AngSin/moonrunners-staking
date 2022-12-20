@@ -30,8 +30,8 @@ contract Trophies is Ownable {
     }
 
     function stake(uint256[] calldata _tokenIds) public {
-        Stake memory newStake = Stake(_tokenIds, block.timestamp);
         if (!stakeExists(msg.sender)) {
+            Stake memory newStake = Stake(_tokenIds, block.timestamp);
             userToStake[msg.sender] = newStake;
             for (uint256 i = 0; i < _tokenIds.length; i++) {
                 IERC721(runnersContract).transferFrom(msg.sender, address(this), _tokenIds[i]);
@@ -47,6 +47,15 @@ contract Trophies is Ownable {
             }
         }
     }
+
+//    function unstake(uint256[] calldata _tokenIds) public {
+//        if (stakeExists(msg.sender)) {
+//            for (uint256 i = 0; i < _tokenIds.length; i++) {
+//                Stake memory existingStake = getStake(msg.sender);
+//                if (tokenExistsInArray(_tokenIds[i], ))
+//            }
+//        }
+//    }
 
     function getStake(address _user) public view returns(Stake memory) {
         return userToStake[_user];
