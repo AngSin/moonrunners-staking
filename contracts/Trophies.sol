@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+//import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -48,14 +49,31 @@ contract Trophies is Ownable {
         }
     }
 
-//    function unstake(uint256[] calldata _tokenIds) public {
-//        if (stakeExists(msg.sender)) {
-//            for (uint256 i = 0; i < _tokenIds.length; i++) {
-//                Stake memory existingStake = getStake(msg.sender);
-//                if (tokenExistsInArray(_tokenIds[i], ))
-//            }
-//        }
-//    }
+    function unstake(uint256[] calldata _tokenIds) public {
+        if (stakeExists(msg.sender)) {
+            Stake memory existingStake = getStake(msg.sender);
+            uint256 newTokenIdsLength = existingStake.tokenIds.length;
+            for (uint256 i = 0; i < _tokenIds.length; i++) {
+                uint256 tokenId = _tokenIds[i];
+                if (tokenExistsInArray(tokenId, existingStake.tokenIds)) {
+                    newTokenIdsLength--;
+                }
+            }
+
+            uint256[] memory newTokenIds = new uint256[](newTokenIdsLength);
+            uint256 newTokenIdsCounter = 0;
+            for (uint256 i = 0; i < existingStake.tokenIds.length; i++) {
+                uint256 tokenId = existingStake.tokenIds[i];
+                if (tokenExistsInArray(tokenId, _tokenIds)) {
+                    IERC721(runnersContract).transferFrom(address(this), msg.sender, tokenId);
+                } else {
+                    newTokenIds[newTokenIdsCounter] = tokenId;
+                    newTokenIdsCounter++;
+                }
+            }
+            userToStake[msg.sender].tokenIds = newTokenIds;
+        }
+    }
 
     function getStake(address _user) public view returns(Stake memory) {
         return userToStake[_user];

@@ -5,8 +5,14 @@ import {expect} from "chai";
 import {BigNumber} from "ethers";
 
 describe('staking', () => {
-	it("should not stake if user does not own them", () => {
-
+	it("should not stake if user does not own them", async() => {
+		const runnersContract = await deployContract("Runners") as Runners;
+		const [_, anotherAccount] = await hre.ethers.getSigners();
+		const trophies = await deployContract("Trophies") as Trophies;
+		await trophies.setRunnersContract(runnersContract.address);
+		await runnersContract.setApprovalForAll(trophies.address, true);
+		await expect(trophies.connect(anotherAccount).stake([1, 2]))
+			.to.be.revertedWith('ERC721: transfer from incorrect owner');
 	});
 
 	it("should stake", async () => {
