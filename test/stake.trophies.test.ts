@@ -25,7 +25,7 @@ describe('staking', () => {
 		const blockNum = await hre.ethers.provider.getBlockNumber();
 		const timestamp = (await hre.ethers.provider.getBlock(blockNum)).timestamp;
 		expect(await trophies.getStake(owner.address)).to.eql([
-			[BigNumber.from("1"), BigNumber.from("2")],
+			[1,2],
 			BigNumber.from(timestamp),
 		]);
 	});
@@ -40,22 +40,22 @@ describe('staking', () => {
 		const blockNum = await hre.ethers.provider.getBlockNumber();
 		const timestamp = (await hre.ethers.provider.getBlock(blockNum)).timestamp;
 		expect(await trophies.getStake(owner.address)).to.eql([
-			[BigNumber.from("1"), BigNumber.from("2")],
+			[1,2],
 			BigNumber.from(timestamp),
 		]);
 		await trophies.stake([1,2,3]);
 		expect(await trophies.getStake(owner.address)).to.eql([
-			[BigNumber.from("1"), BigNumber.from("2"), BigNumber.from("3")],
+			[1,2,3],
 			BigNumber.from(timestamp),
 		]);
 		await trophies.stake([1,2]);
 		expect(await trophies.getStake(owner.address)).to.eql([
-			[BigNumber.from("1"), BigNumber.from("2"), BigNumber.from("3")],
+			[1,2,3],
 			BigNumber.from(timestamp),
 		]);
 		await trophies.stake([5]);
 		expect(await trophies.getStake(owner.address)).to.eql([
-			[BigNumber.from("1"), BigNumber.from("2"), BigNumber.from("3"), BigNumber.from("5")],
+			[1,2,3,5],
 			BigNumber.from(timestamp),
 		]);
 	});

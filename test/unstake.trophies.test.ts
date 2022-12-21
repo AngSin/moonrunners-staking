@@ -20,12 +20,12 @@ describe('unstaking', () => {
 		expect(await runnersContract.ownerOf(1)).to.equal(account.address);
 		expect(await trophies.getStake(account.address)).to.eql([
 			[
-				BigNumber.from("2"),
-				BigNumber.from("3"),
-				BigNumber.from("5"),
-				BigNumber.from("6"),
-				BigNumber.from("7"),
-				BigNumber.from("8"),
+				2,
+				3,
+				5,
+				6,
+				7,
+				8,
 			],
 			BigNumber.from(timestamp),
 		]);
@@ -33,12 +33,12 @@ describe('unstaking', () => {
 		await expect(trophies.unstake([]));
 		expect(await trophies.getStake(account.address)).to.eql([
 			[
-				BigNumber.from("2"),
-				BigNumber.from("3"),
-				BigNumber.from("5"),
-				BigNumber.from("6"),
-				BigNumber.from("7"),
-				BigNumber.from("8"),
+				2,
+				3,
+				5,
+				6,
+				7,
+				8,
 			],
 			BigNumber.from(timestamp),
 		]);
