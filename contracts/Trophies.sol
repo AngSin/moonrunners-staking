@@ -12,7 +12,7 @@ contract Trophies is Ownable, ERC1155 {
         uint256 timestamp;
     }
     mapping(address => Stake) userToStake;
-    address public runnersContract;
+    IERC721 public runnersContract;
     uint256 stakingPeriod = 30 days;
     string baseUri;
 
@@ -28,7 +28,7 @@ contract Trophies is Ownable, ERC1155 {
     uint8 silverTrophyId = 1;
     uint8 bronzeTrophyId = 0;
 
-    function setRunnersContract(address _runnersContract) public onlyOwner {
+    function setRunnersContract(IERC721 _runnersContract) public onlyOwner {
         runnersContract = _runnersContract;
     }
 
@@ -60,7 +60,7 @@ contract Trophies is Ownable, ERC1155 {
             Stake memory newStake = Stake(_tokenIds, block.timestamp);
             userToStake[msg.sender] = newStake;
             for (uint16 i = 0; i < _tokenIds.length; i++) {
-                IERC721(runnersContract).transferFrom(msg.sender, address(this), _tokenIds[i]);
+                runnersContract.transferFrom(msg.sender, address(this), _tokenIds[i]);
             }
         } else {
             Stake memory existingStake = getStake(msg.sender);
@@ -68,7 +68,7 @@ contract Trophies is Ownable, ERC1155 {
                 uint16 tokenId = _tokenIds[i];
                 if(!tokenExistsInArray(tokenId, existingStake.tokenIds)) {
                     userToStake[msg.sender].tokenIds.push(tokenId);
-                    IERC721(runnersContract).transferFrom(msg.sender, address(this), _tokenIds[i]);
+                    runnersContract.transferFrom(msg.sender, address(this), _tokenIds[i]);
                 }
             }
         }
@@ -93,11 +93,15 @@ contract Trophies is Ownable, ERC1155 {
         for (uint16 i = 0; i < existingStake.tokenIds.length; i++) {
             uint16 tokenId = existingStake.tokenIds[i];
             if (tokenExistsInArray(tokenId, _tokenIds)) {
-                IERC721(runnersContract).transferFrom(address(this), msg.sender, tokenId);
+                runnersContract.transferFrom(address(this), msg.sender, tokenId);
             } else {
                 newTokenIds[newTokenIdsCounter] = tokenId;
                 newTokenIdsCounter++;
             }
+        }
+
+        if (newTokenIdsLength == 0) {
+            userToStake[msg.sender].timestamp = 0;
         }
         userToStake[msg.sender].tokenIds = newTokenIds;
     }
