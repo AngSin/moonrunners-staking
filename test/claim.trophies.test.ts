@@ -2,6 +2,7 @@ import {deployContract} from "./utils";
 import {Runners, Trophies} from "../typechain-types";
 import hre from "hardhat";
 import {expect} from "chai";
+import {BigNumber} from "ethers";
 
 describe('claim', () => {
 	it('should let users claim the highest possible trophy', async () => {
@@ -18,17 +19,17 @@ describe('claim', () => {
 
 		// claim does not work before 30 days
 		await trophies.connect(account1).stake([1, 2, 3, 4, 5,]);
-		await trophies.connect(account1).claim();
+		await expect(trophies.connect(account1).claim()).to.be.revertedWith('You have not staked long enough!');
 		expect(await trophies.connect(account1).balanceOf(account1.address, 1)).to.equal(0);
 
 		// claim silver
 		await trophies.setStakingPeriod(1);
-		await trophies.connect(account1).stake([1, 2, 3, 4, 5,]);
+		expect(await trophies.connect(account1).balanceOf(account1.address, 1)).to.equal(0);
 		await trophies.connect(account1).claim();
 		expect(await trophies.connect(account1).balanceOf(account1.address, 1)).to.equal(1);
+
 		// repeated claims do not work
-		await trophies.connect(account1).stake([1, 2, 3, 4, 5,]);
-		await trophies.connect(account1).claim();
+		await expect(trophies.connect(account1).claim()).to.be.revertedWith('You already have a Silver trophy!');
 		expect(await trophies.connect(account1).balanceOf(account1.address, 1)).to.equal(1);
 
 		// having & staking more runners makes user eligible for gold trophy
@@ -48,5 +49,17 @@ describe('claim', () => {
 		await trophies.setStakingPeriod(1);
 		await trophies.claim();
 		expect(await trophies.balanceOf(account.address, 3)).to.equal(1);
+	});
+
+	it('should let users claim a bronze trophy', async () => {
+		const runnersContract = await deployContract("Runners") as Runners;
+		const [account] = await hre.ethers.getSigners();
+		const trophies = await deployContract("Trophies") as Trophies;
+		await trophies.setRunnersContract(runnersContract.address);
+		await runnersContract.setApprovalForAll(trophies.address, true);
+		await trophies.stake([1]);
+		await trophies.setStakingPeriod(1);
+		await trophies.claim();
+		expect(await trophies.balanceOf(account.address, 0)).to.equal(1);
 	});
 });
