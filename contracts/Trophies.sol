@@ -136,4 +136,37 @@ contract Trophies is Ownable, ERC1155 {
             return super._mint(msg.sender, bronzeTrophyId, 1, "");
         }
     }
+
+    function _beforeTokenTransfer(
+        address,
+        address from,
+        address to,
+        uint256[] memory,
+        uint256[] memory,
+        bytes memory
+    ) internal override virtual {
+        require(from == address(0) || to == address(0), "This Trophy can not be sent!");
+    }
+
+    event Soulbound(uint256 indexed id, bool bounded);
+
+    function _afterTokenTransfer(
+        address,
+        address from,
+        address,
+        uint256[] memory ids,
+        uint256[] memory,
+        bytes memory
+    ) internal override virtual {
+        if (from == address(0)) {
+            for (uint16 i = 0; i < ids.length; i++) {
+                uint256 id = ids[i];
+                emit Soulbound(id, true);
+            }
+        }
+    }
+
+    function isSoulbound(uint256) external pure returns (bool) {
+        return true;
+    }
 }
