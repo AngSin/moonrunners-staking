@@ -4,8 +4,10 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Trophies is Ownable, ERC1155 {
+    using Strings for uint256;
     struct Stake {
         uint256[] tokenIds;
         uint256 timestamp;
@@ -13,7 +15,7 @@ contract Trophies is Ownable, ERC1155 {
     mapping(address => Stake) userToStake;
     IERC721 public runnersContract;
     uint256 public stakingPeriod = 30 days;
-    string baseUri;
+    string baseUri = "https://moonrunners.herokuapp.com/api/trophies/";
 
     // trophy eligibility
     uint256 diamondEligibility = 25;
@@ -190,5 +192,9 @@ contract Trophies is Ownable, ERC1155 {
 
     function isSoulbound(uint256) external pure returns (bool) {
         return true;
+    }
+
+    function uri(uint256 _tokenId) public view override returns (string memory) {
+        return string(abi.encodePacked(baseUri, _tokenId.toString()));
     }
 }
