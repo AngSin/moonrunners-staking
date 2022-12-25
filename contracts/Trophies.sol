@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Trophies is Ownable, ERC1155 {
     struct Stake {
-        uint16[] tokenIds;
+        uint256[] tokenIds;
         uint256 timestamp;
     }
     mapping(address => Stake) userToStake;
@@ -16,16 +16,16 @@ contract Trophies is Ownable, ERC1155 {
     string baseUri;
 
     // trophy eligibility
-    uint8 diamondEligibility = 25;
-    uint8 goldEligibility = 10;
-    uint8 silverEligibility = 5;
-    uint8 bronzeEligibility = 1;
+    uint256 diamondEligibility = 25;
+    uint256 goldEligibility = 10;
+    uint256 silverEligibility = 5;
+    uint256 bronzeEligibility = 1;
 
     // trophy ids
-    uint8 diamondTrophyId = 3;
-    uint8 goldTrophyId = 2;
-    uint8 silverTrophyId = 1;
-    uint8 bronzeTrophyId = 0;
+    uint256 diamondTrophyId = 4;
+    uint256 goldTrophyId = 3;
+    uint256 silverTrophyId = 2;
+    uint256 bronzeTrophyId = 1;
 
     function setRunnersContract(IERC721 _runnersContract) public onlyOwner {
         runnersContract = _runnersContract;
@@ -50,8 +50,8 @@ contract Trophies is Ownable, ERC1155 {
         _;
 }
 
-    function tokenExistsInArray(uint16 tokenId, uint16[] memory tokenIds) private pure returns(bool) {
-        for (uint16 i = 0; i < tokenIds.length; i++) {
+    function tokenExistsInArray(uint256 tokenId, uint256[] memory tokenIds) private pure returns(bool) {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
             if (tokenIds[i] == tokenId) {
                 return true;
             }
@@ -59,17 +59,17 @@ contract Trophies is Ownable, ERC1155 {
         return false;
     }
 
-    function stake(uint16[] calldata _tokenIds) public {
+    function stake(uint256[] calldata _tokenIds) public {
         if (!stakeExists(msg.sender)) {
             Stake memory newStake = Stake(_tokenIds, block.timestamp);
             userToStake[msg.sender] = newStake;
-            for (uint16 i = 0; i < _tokenIds.length; i++) {
+            for (uint256 i = 0; i < _tokenIds.length; i++) {
                 runnersContract.transferFrom(msg.sender, address(this), _tokenIds[i]);
             }
         } else {
             Stake memory existingStake = getStake(msg.sender);
-            for (uint16 i = 0; i < _tokenIds.length; i++) {
-                uint16 tokenId = _tokenIds[i];
+            for (uint256 i = 0; i < _tokenIds.length; i++) {
+                uint256 tokenId = _tokenIds[i];
                 if(!tokenExistsInArray(tokenId, existingStake.tokenIds)) {
                     userToStake[msg.sender].tokenIds.push(tokenId);
                     runnersContract.transferFrom(msg.sender, address(this), _tokenIds[i]);
@@ -78,20 +78,20 @@ contract Trophies is Ownable, ERC1155 {
         }
     }
 
-    function unstake(uint16[] calldata _tokenIds) public onlyStaker {
+    function unstake(uint256[] calldata _tokenIds) public onlyStaker {
         Stake memory existingStake = getStake(msg.sender);
         uint256 newTokenIdsLength = existingStake.tokenIds.length;
-        for (uint16 i = 0; i < _tokenIds.length; i++) {
-            uint16 tokenId = _tokenIds[i];
+        for (uint256 i = 0; i < _tokenIds.length; i++) {
+            uint256 tokenId = _tokenIds[i];
             if (tokenExistsInArray(tokenId, existingStake.tokenIds)) {
                 newTokenIdsLength--;
             }
         }
 
-        uint16[] memory newTokenIds = new uint16[](newTokenIdsLength);
+        uint256[] memory newTokenIds = new uint256[](newTokenIdsLength);
         uint256 newTokenIdsCounter = 0;
-        for (uint16 i = 0; i < existingStake.tokenIds.length; i++) {
-            uint16 tokenId = existingStake.tokenIds[i];
+        for (uint256 i = 0; i < existingStake.tokenIds.length; i++) {
+            uint256 tokenId = existingStake.tokenIds[i];
             if (tokenExistsInArray(tokenId, _tokenIds)) {
                 runnersContract.transferFrom(address(this), msg.sender, tokenId);
             } else {
@@ -110,31 +110,53 @@ contract Trophies is Ownable, ERC1155 {
         return userToStake[_user];
     }
 
-    function claim() public onlyStaker {
+    // also used by frontend
+    function getPossibleTrophyClaim() public view returns(uint256) {
+        if (!stakeExists(msg.sender)) return 0;
         Stake memory existingStake = getStake(msg.sender);
 
         bool hasStakedForLongEnough = existingStake.timestamp + stakingPeriod < block.timestamp;
-        require(hasStakedForLongEnough, "You have not staked long enough!");
-
-        require(super.balanceOf(msg.sender, diamondTrophyId) == 0, "You already have a Diamond trophy!");
-        if (existingStake.tokenIds.length >= diamondEligibility) {
-            return super._mint(msg.sender, diamondTrophyId, 1, "");
+        if (!hasStakedForLongEnough) {
+            return 0;
         }
 
-        require(super.balanceOf(msg.sender, goldTrophyId) == 0, "You already have a Gold trophy!");
-        if (existingStake.tokenIds.length >= goldEligibility) {
-            return super._mint(msg.sender, goldTrophyId, 1, "");
+        if (super.balanceOf(msg.sender, diamondTrophyId) == 0 && existingStake.tokenIds.length >= diamondEligibility) {
+            return diamondTrophyId;
         }
 
-        require(super.balanceOf(msg.sender, silverTrophyId) == 0, "You already have a Silver trophy!");
-        if (existingStake.tokenIds.length >= silverEligibility) {
-            return super._mint(msg.sender, silverTrophyId, 1, "");
+        if (
+            super.balanceOf(msg.sender, diamondTrophyId) == 0 &&
+            super.balanceOf(msg.sender, goldTrophyId) == 0 &&
+            existingStake.tokenIds.length >= goldEligibility
+        ) {
+            return goldTrophyId;
         }
 
-        require(super.balanceOf(msg.sender, bronzeTrophyId) == 0, "You already have a Bronze trophy!");
-        if (existingStake.tokenIds.length >= bronzeEligibility) {
-            return super._mint(msg.sender, bronzeTrophyId, 1, "");
+        if (
+            super.balanceOf(msg.sender, diamondTrophyId) == 0 &&
+            super.balanceOf(msg.sender, goldTrophyId) == 0 &&
+            super.balanceOf(msg.sender, silverTrophyId) == 0 &&
+            existingStake.tokenIds.length >= silverEligibility
+        ) {
+            return silverTrophyId;
         }
+
+        if (
+            super.balanceOf(msg.sender, diamondTrophyId) == 0 &&
+            super.balanceOf(msg.sender, goldTrophyId) == 0 &&
+            super.balanceOf(msg.sender, silverTrophyId) == 0 &&
+            super.balanceOf(msg.sender, bronzeTrophyId) == 0 &&
+            existingStake.tokenIds.length >= bronzeEligibility
+        ) {
+            return bronzeTrophyId;
+        }
+        return 0;
+    }
+
+    function claim() public onlyStaker {
+        uint256 trophyId = getPossibleTrophyClaim();
+        require(trophyId > 0, "No claim is possible for you!");
+        super._mint(msg.sender, trophyId, 1, "");
     }
 
     function _beforeTokenTransfer(
@@ -145,7 +167,7 @@ contract Trophies is Ownable, ERC1155 {
         uint256[] memory,
         bytes memory
     ) internal override virtual {
-        require(from == address(0) || to == address(0), "This Trophy can not be sent!");
+        require(from == address(0) || to == address(0), "Trophies cannot be transferred");
     }
 
     event Soulbound(uint256 indexed id, bool bounded);
@@ -159,7 +181,7 @@ contract Trophies is Ownable, ERC1155 {
         bytes memory
     ) internal override virtual {
         if (from == address(0)) {
-            for (uint16 i = 0; i < ids.length; i++) {
+            for (uint256 i = 0; i < ids.length; i++) {
                 uint256 id = ids[i];
                 emit Soulbound(id, true);
             }
