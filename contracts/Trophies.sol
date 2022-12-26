@@ -13,7 +13,7 @@ contract Trophies is Ownable, ERC1155 {
         uint256 timestamp;
     }
     mapping(address => Stake) userToStake;
-    IERC721 public runnersContract;
+    address public runnersContract = 0x1485297e942ce64E0870EcE60179dFda34b4C625;
     uint256 public stakingPeriod = 30 days;
     string baseUri = "https://moonrunners.herokuapp.com/api/trophies/";
 
@@ -29,7 +29,7 @@ contract Trophies is Ownable, ERC1155 {
     uint256 silverTrophyId = 2;
     uint256 bronzeTrophyId = 1;
 
-    function setRunnersContract(IERC721 _runnersContract) public onlyOwner {
+    function setRunnersContract(address _runnersContract) public onlyOwner {
         runnersContract = _runnersContract;
     }
 
@@ -66,7 +66,7 @@ contract Trophies is Ownable, ERC1155 {
             Stake memory newStake = Stake(_tokenIds, block.timestamp);
             userToStake[msg.sender] = newStake;
             for (uint256 i = 0; i < _tokenIds.length; i++) {
-                runnersContract.transferFrom(msg.sender, address(this), _tokenIds[i]);
+                IERC721(runnersContract).transferFrom(msg.sender, address(this), _tokenIds[i]);
             }
         } else {
             Stake memory existingStake = getStake(msg.sender);
@@ -74,7 +74,7 @@ contract Trophies is Ownable, ERC1155 {
                 uint256 tokenId = _tokenIds[i];
                 if(!tokenExistsInArray(tokenId, existingStake.tokenIds)) {
                     userToStake[msg.sender].tokenIds.push(tokenId);
-                    runnersContract.transferFrom(msg.sender, address(this), _tokenIds[i]);
+                    IERC721(runnersContract).transferFrom(msg.sender, address(this), _tokenIds[i]);
                 }
             }
         }
@@ -95,7 +95,7 @@ contract Trophies is Ownable, ERC1155 {
         for (uint256 i = 0; i < existingStake.tokenIds.length; i++) {
             uint256 tokenId = existingStake.tokenIds[i];
             if (tokenExistsInArray(tokenId, _tokenIds)) {
-                runnersContract.transferFrom(address(this), msg.sender, tokenId);
+                IERC721(runnersContract).transferFrom(address(this), msg.sender, tokenId);
             } else {
                 newTokenIds[newTokenIdsCounter] = tokenId;
                 newTokenIdsCounter++;
