@@ -122,36 +122,38 @@ contract Trophies is Ownable, ERC1155 {
             return 0;
         }
 
-        if (super.balanceOf(msg.sender, diamondTrophyId) == 0 && existingStake.tokenIds.length >= diamondEligibility) {
-            return diamondTrophyId;
+        if (existingStake.tokenIds.length >= diamondEligibility) {
+            if (super.balanceOf(msg.sender, diamondTrophyId) == 0) {
+                return diamondTrophyId;
+            } else {
+                return 0;
+            }
         }
 
-        if (
-            super.balanceOf(msg.sender, diamondTrophyId) == 0 &&
-            super.balanceOf(msg.sender, goldTrophyId) == 0 &&
-            existingStake.tokenIds.length >= goldEligibility
-        ) {
-            return goldTrophyId;
+        if (existingStake.tokenIds.length >= goldEligibility) {
+            if (super.balanceOf(msg.sender, goldTrophyId) == 0) {
+                return goldTrophyId;
+            } else {
+                return 0;
+            }
         }
 
-        if (
-            super.balanceOf(msg.sender, diamondTrophyId) == 0 &&
-            super.balanceOf(msg.sender, goldTrophyId) == 0 &&
-            super.balanceOf(msg.sender, silverTrophyId) == 0 &&
-            existingStake.tokenIds.length >= silverEligibility
-        ) {
-            return silverTrophyId;
+        if (existingStake.tokenIds.length >= silverEligibility) {
+            if (super.balanceOf(msg.sender, silverTrophyId) == 0) {
+                return silverTrophyId;
+            } else {
+                return 0;
+            }
         }
 
-        if (
-            super.balanceOf(msg.sender, diamondTrophyId) == 0 &&
-            super.balanceOf(msg.sender, goldTrophyId) == 0 &&
-            super.balanceOf(msg.sender, silverTrophyId) == 0 &&
-            super.balanceOf(msg.sender, bronzeTrophyId) == 0 &&
-            existingStake.tokenIds.length >= bronzeEligibility
-        ) {
-            return bronzeTrophyId;
+        if (existingStake.tokenIds.length >= bronzeEligibility) {
+            if (super.balanceOf(msg.sender, bronzeTrophyId) == 0) {
+                return bronzeTrophyId;
+            } else {
+                return 0;
+            }
         }
+
         return 0;
     }
 

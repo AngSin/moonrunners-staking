@@ -2,6 +2,8 @@ import {deployContract} from "./utils";
 import {Runners, Trophies} from "../typechain-types";
 import hre from "hardhat";
 import {expect} from "chai";
+import {BigNumber} from "ethers";
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 
 describe('claim', () => {
 	it('should let users claim the highest possible trophy', async () => {
@@ -61,5 +63,33 @@ describe('claim', () => {
 		await trophies.setStakingPeriod(1);
 		await trophies.claim();
 		expect(await trophies.balanceOf(account.address, 1)).to.equal(1);
+	});
+
+	it('should let users downgrade', async () => {
+		const runnersContract = await deployContract("Runners") as Runners;
+		const trophies = await deployContract("Trophies") as Trophies;
+		const [account] = await hre.ethers.getSigners();
+		await trophies.setRunnersContract(runnersContract.address);
+		await trophies.setStakingPeriod(1);
+		await runnersContract.setApprovalForAll(trophies.address, true);
+		// having & staking 25 runners makes user eligible for diamond trophy
+		const tokenIds = [];
+		for (let i = 1; i < 26; i++) {
+			tokenIds.push(i);
+		}
+		await trophies.stake(tokenIds);
+		await time.increase(100);
+		expect(await trophies.getPossibleTrophyClaim()).to.equal(BigNumber.from("4")); // diamond
+		await trophies.claim();
+		expect(await trophies.balanceOf(account.address, 4)).to.equal(1);
+		const trophiesToRemove = [1];
+		await trophies.unstake(trophiesToRemove);
+		await time.increase(100);
+		expect(await trophies.getPossibleTrophyClaim()).to.equal(BigNumber.from("3"));
+		await trophies.claim();
+		expect(await trophies.balanceOf(account.address, 3)).to.equal(1);
+		expect(await trophies.getPossibleTrophyClaim()).to.equal(BigNumber.from(0));
+		await trophies.unstake([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]);
+		expect(await trophies.getPossibleTrophyClaim()).to.equal(BigNumber.from("2"));
 	});
 });
