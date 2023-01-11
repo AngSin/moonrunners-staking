@@ -163,6 +163,10 @@ contract Trophies is Ownable, ERC1155 {
         super._mint(msg.sender, trophyId, 1, "");
     }
 
+    function airdropTrophy(uint256 _trophyId, address _airdropWinner) public onlyOwner {
+        super._mint(_airdropWinner, _trophyId, 1, "");
+    }
+
     function _beforeTokenTransfer(
         address,
         address from,
