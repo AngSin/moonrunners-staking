@@ -1,5 +1,5 @@
 import hre from "hardhat";
-import {deployContract} from "./utils";
+import {deployContract, deployProxy} from "./utils";
 import {Runners, Trophies} from "../typechain-types";
 import {expect} from "chai";
 import {BigNumber} from "ethers";
@@ -8,7 +8,7 @@ describe('staking', () => {
 	it("should not stake if user does not own them", async() => {
 		const runnersContract = await deployContract("Runners") as Runners;
 		const [_, anotherAccount] = await hre.ethers.getSigners();
-		const trophies = await deployContract("Trophies") as Trophies;
+		const trophies = await deployProxy("Trophies") as Trophies;
 		await trophies.setRunnersContract(runnersContract.address);
 		await runnersContract.setApprovalForAll(trophies.address, true);
 		await expect(trophies.connect(anotherAccount).stake([1, 2]))
@@ -18,7 +18,7 @@ describe('staking', () => {
 	it("should stake", async () => {
 		const runnersContract = await deployContract("Runners") as Runners;
 		const [owner] = await hre.ethers.getSigners();
-		const trophies = await deployContract("Trophies") as Trophies;
+		const trophies = await deployProxy("Trophies") as Trophies;
 		await trophies.setRunnersContract(runnersContract.address);
 		await runnersContract.setApprovalForAll(trophies.address, true);
 		await trophies.stake([1, 2]);
@@ -33,7 +33,7 @@ describe('staking', () => {
 	it("should add to stake without changing timestamp", async () => {
 		const runnersContract = await deployContract("Runners") as Runners;
 		const [owner] = await hre.ethers.getSigners();
-		const trophies = await deployContract("Trophies") as Trophies;
+		const trophies = await deployProxy("Trophies") as Trophies;
 		await trophies.setRunnersContract(runnersContract.address);
 		await runnersContract.setApprovalForAll(trophies.address, true);
 		await trophies.stake([1, 2]);

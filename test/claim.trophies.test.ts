@@ -1,4 +1,4 @@
-import {deployContract} from "./utils";
+import {deployContract, deployProxy} from "./utils";
 import {Runners, Trophies} from "../typechain-types";
 import hre from "hardhat";
 import {expect} from "chai";
@@ -9,7 +9,7 @@ describe('claim', () => {
 	it('should let users claim the highest possible trophy', async () => {
 		const runnersContract = await deployContract("Runners") as Runners;
 		const [account, account1, account2] = await hre.ethers.getSigners();
-		const trophies = await deployContract("Trophies") as Trophies;
+		const trophies = await deployProxy("Trophies") as Trophies;
 		await trophies.setRunnersContract(runnersContract.address);
 		await runnersContract.setApprovalForAll(trophies.address, true);
 		await runnersContract.connect(account1).setApprovalForAll(trophies.address, true);
@@ -56,7 +56,7 @@ describe('claim', () => {
 	it('should let users claim a bronze trophy', async () => {
 		const runnersContract = await deployContract("Runners") as Runners;
 		const [account] = await hre.ethers.getSigners();
-		const trophies = await deployContract("Trophies") as Trophies;
+		const trophies = await deployProxy("Trophies") as Trophies;
 		await trophies.setRunnersContract(runnersContract.address);
 		await runnersContract.setApprovalForAll(trophies.address, true);
 		await trophies.stake([1]);
@@ -67,7 +67,7 @@ describe('claim', () => {
 
 	it('should let users downgrade', async () => {
 		const runnersContract = await deployContract("Runners") as Runners;
-		const trophies = await deployContract("Trophies") as Trophies;
+		const trophies = await deployProxy("Trophies") as Trophies;
 		const [account] = await hre.ethers.getSigners();
 		await trophies.setRunnersContract(runnersContract.address);
 		await trophies.setStakingPeriod(1);

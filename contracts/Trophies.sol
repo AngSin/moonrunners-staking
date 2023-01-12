@@ -3,31 +3,34 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
 
-contract Trophies is Ownable, ERC1155 {
+contract Trophies is Initializable, ERC1155Upgradeable, OwnableUpgradeable, UUPSUpgradeable {
     using Strings for uint256;
     struct Stake {
         uint256[] tokenIds;
         uint256 timestamp;
     }
     mapping(address => Stake) userToStake;
-    address public runnersContract = 0x1485297e942ce64E0870EcE60179dFda34b4C625;
-    uint256 public stakingPeriod = 30 days;
-    string baseUri = "https://moonrunners.herokuapp.com/api/trophies/";
+    address public runnersContract;
+    uint256 public stakingPeriod;
+    string baseUri;
 
     // trophy eligibility
-    uint256 diamondEligibility = 25;
-    uint256 goldEligibility = 10;
-    uint256 silverEligibility = 5;
-    uint256 bronzeEligibility = 1;
+    uint256 diamondEligibility;
+    uint256 goldEligibility;
+    uint256 silverEligibility;
+    uint256 bronzeEligibility;
 
     // trophy ids
-    uint256 diamondTrophyId = 4;
-    uint256 goldTrophyId = 3;
-    uint256 silverTrophyId = 2;
-    uint256 bronzeTrophyId = 1;
+    uint256 diamondTrophyId;
+    uint256 goldTrophyId;
+    uint256 silverTrophyId;
+    uint256 bronzeTrophyId;
 
     function setRunnersContract(address _runnersContract) public onlyOwner {
         runnersContract = _runnersContract;
@@ -41,7 +44,22 @@ contract Trophies is Ownable, ERC1155 {
         stakingPeriod = _stakingPeriod;
     }
 
-    constructor() ERC1155(baseUri) {}
+    function initialize() initializer public {
+        baseUri = "https://moonrunners.herokuapp.com/api/trophies/";
+        __ERC1155_init(baseUri);
+        __Ownable_init();
+        __UUPSUpgradeable_init();
+        runnersContract = 0x1485297e942ce64E0870EcE60179dFda34b4C625;
+        stakingPeriod = 30 days;
+        diamondEligibility = 25;
+        goldEligibility = 10;
+        silverEligibility = 5;
+        bronzeEligibility = 1;
+        diamondTrophyId  = 4;
+        goldTrophyId = 3;
+        silverTrophyId = 2;
+        bronzeTrophyId = 1;
+    }
 
     function stakeExists(address _user) public view returns(bool) {
         return userToStake[_user].timestamp > 0;
@@ -202,5 +220,9 @@ contract Trophies is Ownable, ERC1155 {
 
     function uri(uint256 _tokenId) public view override returns (string memory) {
         return string(abi.encodePacked(baseUri, _tokenId.toString()));
+    }
+
+    function _authorizeUpgrade(address newImplementation) internal onlyOwner override {
+
     }
 }
