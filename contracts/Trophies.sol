@@ -222,7 +222,5 @@ contract Trophies is Initializable, ERC1155Upgradeable, OwnableUpgradeable, UUPS
         return string(abi.encodePacked(baseUri, _tokenId.toString()));
     }
 
-    function _authorizeUpgrade(address newImplementation) internal onlyOwner override {
-
-    }
+    function _authorizeUpgrade(address newImplementation) internal onlyOwner override {}
 }
