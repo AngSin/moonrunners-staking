@@ -2,17 +2,17 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "@openzeppelin/hardhat-upgrades";
 
-const privateKey = process.env.PRIVATE_KEY;
-
-if (!privateKey) {
-  throw Error('No private Key!');  
-}
-
-const apiKey = process.env.API_KEY;
-
-if (!apiKey) {
-  throw Error('No api key!');
-}
+// const privateKey = process.env.PRIVATE_KEY;
+//
+// if (!privateKey) {
+//   throw Error('No private Key!');
+// }
+//
+// const apiKey = process.env.API_KEY;
+//
+// if (!apiKey) {
+//   throw Error('No api key!');
+// }
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -20,16 +20,16 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 1000,
+        runs: 200,
       },
     },
   },
-  networks: {
-    goerli: {
-      url: `https://eth-goerli.alchemyapi.io/v2/${apiKey}`,
-      accounts: [privateKey]
-    },
-  },
+  // networks: {
+  //   goerli: {
+  //     url: `https://eth-goerli.alchemyapi.io/v2/${apiKey}`,
+  //     accounts: [privateKey]
+  //   },
+  // },
 };
 
 export default config;

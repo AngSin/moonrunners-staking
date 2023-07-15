@@ -16,6 +16,8 @@
   "dependencies": {
     "@openzeppelin/contracts": "^4.8.0",
     "@openzeppelin/contracts-upgradeable": "^4.8.0",
-    "@openzeppelin/hardhat-upgrades": "^1.22.0"
+    "@openzeppelin/hardhat-upgrades": "^1.22.0",
+    "erc721a-upgradeable": "^4.2.3",
+    "operator-filter-registry": "^1.4.2"
   }
 }
