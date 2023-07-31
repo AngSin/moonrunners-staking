@@ -50,7 +50,7 @@ contract TrophiesV2 is Initializable, ERC1155Upgradeable, OwnableUpgradeable, UU
         __Ownable_init();
         __UUPSUpgradeable_init();
         runnersContract = 0x1485297e942ce64E0870EcE60179dFda34b4C625;
-        stakingPeriod = 30 days;
+        stakingPeriod = 0;
         diamondEligibility = 25;
         goldEligibility = 10;
         silverEligibility = 5;
@@ -288,5 +288,18 @@ contract TrophiesV2 is Initializable, ERC1155Upgradeable, OwnableUpgradeable, UU
             userToStake[msg.sender].timestamp = 0;
         }
         userToStake[msg.sender].tokenIds = newTokenIds;
+    }
+
+    function setDragonTokenIdBuffer(uint256 _dragonTokenIdBuffer) public onlyOwner {
+        dragonTokenIdBuffer = _dragonTokenIdBuffer;
+    }
+
+    function changeStake(address _user, uint256[] calldata _stakedTokenIds) public onlyOwner {
+        Stake memory oldStake = getStake(_user);
+        Stake memory newStake = Stake(
+            _stakedTokenIds,
+            oldStake.timestamp
+        );
+        userToStake[_user] = newStake;
     }
 }
